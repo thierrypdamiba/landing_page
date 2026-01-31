@@ -23,7 +23,7 @@ jobs:
         run: bash -x ./install-and-build.sh
       - name: Link Checker
         id: lychee
-        uses: lycheeverse/lychee-action@v1.9.1
+        uses: lycheeverse/lychee-action@v2
         with:
           args: 'qdrant-landing/public'
         env:
