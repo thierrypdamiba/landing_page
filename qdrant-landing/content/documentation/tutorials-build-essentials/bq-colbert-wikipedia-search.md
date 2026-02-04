@@ -43,7 +43,7 @@ Before diving into code, let's look at how the agent makes decisions. When a use
 | Step | Action | Target |
 |---|---|---|
 | 1 | **Cache check** | `user_articles`, exact match on topic pair |
-| 2 | **Wikipedia** | `wikipedia_multimodal`, BQ + ColBERT |
+| 2 | **Wikipedia** | `wikipedia_bq_colbert`, BQ + ColBERT |
 | 3 | **Web fallback** | Linkup API → `linkup_cache` (24h TTL) |
 | 4 | **Preferences** | `user_feedback`, style prefs by user |
 | 5 | **Generation** | Gemini 2.0 Flash, streaming |
@@ -68,7 +68,7 @@ client = QdrantClient(url="your-qdrant-url", api_key="your-api-key")
 
 # 1. Wikipedia knowledge base: 35M vectors with BQ + ColBERT
 client.create_collection(
-    collection_name="wikipedia_multimodal",
+    collection_name="wikipedia_bq_colbert",
     vectors_config={
         "dense": VectorParams(
             size=256,
@@ -112,7 +112,7 @@ client.create_collection(
 
 Why four collections instead of one? Each has a fundamentally different access pattern:
 
-- **`wikipedia_multimodal`** uses BQ + ColBERT prefetch for semantic search at scale
+- **`wikipedia_bq_colbert`** uses BQ + ColBERT prefetch for semantic search at scale
 - **`user_articles`** uses scroll + keyword filters for exact-match cache lookups (no vector similarity needed)
 - **`user_feedback`** uses semantic search + user ID filtering for preference retrieval
 - **`linkup_cache`** uses semantic search + client-side TTL expiration
@@ -168,7 +168,7 @@ for i in range(0, len(ds), batch_size):
         ))
 
     client.upsert(
-        collection_name="wikipedia_multimodal",
+        collection_name="wikipedia_bq_colbert",
         points=points,
         wait=True,
     )
@@ -180,11 +180,11 @@ After all data is loaded, rebuild the HNSW index:
 
 ```python
 client.update_collection(
-    collection_name="wikipedia_multimodal",
+    collection_name="wikipedia_bq_colbert",
     hnsw_config=HnswConfigDiff(m=16),
 )
 # Wait for green status
-while client.get_collection("wikipedia_multimodal").status.value != "green":
+while client.get_collection("wikipedia_bq_colbert").status.value != "green":
     time.sleep(1)
 ```
 
@@ -210,7 +210,7 @@ def search_world(query: str, top_k: int = 5):
 
     # Two-stage search: BQ prefetch → ColBERT rerank
     results = client.query_points(
-        collection_name="wikipedia_multimodal",
+        collection_name="wikipedia_bq_colbert",
         prefetch={
             "query": dense_query,
             "using": "dense",
@@ -235,7 +235,7 @@ def search_world(query: str, top_k: int = 5):
 
 Here's what happens inside Qdrant:
 
-1. The `prefetch` stage searches BQ-compressed dense vectors using Hamming distance over HNSW. Extremely fast binary comparisons on 256 bits
+1. The `prefetch` stage searches BQ-compressed dense vectors over HNSW. Binary quantization reduces 256 floats to 256 bits for fast approximate comparison
 2. Qdrant retrieves the top 50 candidates
 3. The `query` stage rescores those 50 with ColBERT's MaxSim, computing token-level similarity between query and document
 4. The top results are returned, ranked by ColBERT score
@@ -330,6 +330,10 @@ async def connect_topics_stream(request: ConnectRequest):
             f"{topic_a} {topic_b} relationship", top_k=3
         )
 
+        context_a = format_for_grounding(results_a)
+        context_b = format_for_grounding(results_b)
+        context_conn = format_for_grounding(connection_results)
+
         # DECISION 3: Web fallback routing
         avg_score = sum(r["score"] for r in results_a[:2] + results_b[:2]) / 4
         if avg_score < 0.85 and linkup_available():
@@ -368,8 +372,10 @@ async def connect_topics_stream(request: ConnectRequest):
             yield send_event("content", {"chunk": chunk})
 
         # STEP: Store in Qdrant for caching
+        title = f"{topic_a} and {topic_b}: A Connection"
+        source_urls = [r["url"] for r in results_a + results_b]
         store_article(user_id, title, article_content,
-                      topic_a, topic_b, source_page_ids, source_urls)
+                      topic_a, topic_b, source_urls)
 
         yield send_event("complete", {"cached": False})
 
@@ -500,7 +506,7 @@ const stream = new ReadableStream({
     send(sendEvent("step", {
       step: "search_a",
       status: "running",
-      message: "Searching Qdrant wikipedia_multimodal collection...",
+      message: "Searching Qdrant wikipedia_bq_colbert collection...",
       detail: `Query: "${topicA}" | Collection: 35M+ vectors`,
     }));
 
@@ -526,7 +532,7 @@ You can combine the two-stage BQ + ColBERT retrieval with payload filters. The f
 
 ```python
 results = client.query_points(
-    collection_name="wikipedia_multimodal",
+    collection_name="wikipedia_bq_colbert",
     prefetch={
         "query": dense_query,
         "using": "dense",
