@@ -1,26 +1,186 @@
 <section class="demos">
   <div class="container">
-    <div class="demos__header mb-5 mb-md-7">
-      <h2 class="demos__title mx-auto mx-lg-0">{{ .Params.title }}</h2>
-      <p class="demos__subtitle mx-auto mx-lg-0">{{ .Params.description }}</p>
+    <div class="demos__header">
+      <h1 class="demos__title">{{ .Params.title }}</h1>
+      <p class="demos__subtitle">{{ .Params.description }}</p>
     </div>
-    <div class="demos__cards row">
-      {{ range $index, $element := .Params.cards }}
-        <div class="col-12">
-          <div class="card demos__card">
-            <div class="demos__card-content">
-              <h6 class="demos__card-title">{{ .title | safeHTML }}</h6>
-              <div class="demos__card-description">
-                {{ range .paragraphs }}
-                  <p>{{ .content }}</p>
-                {{ end }}
-              </div>
-              <a class="link link_dark link_md align-self-start" href="{{ .link.url }}"> {{ .link.text }} </a>
-            </div>
-            <div class="demos__card-image" style="background-image: url(/img/demos/demo-{{ $index }}.png)"></div>
+
+    <div class="demos__layout">
+      <aside class="demos__sidebar">
+        <div class="demos__search">
+          <svg class="demos__search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+          </svg>
+          <input type="text" class="demos__search-input" placeholder="Search demos..." id="demo-search">
+        </div>
+
+        {{ if .Params.filters }}
+        <div class="demos__filter-section">
+          <h3 class="demos__filter-title">Categories</h3>
+          <div class="demos__filter-list">
+            <label class="demos__filter-item">
+              <input type="radio" name="category" value="all" checked>
+              <span class="demos__filter-radio"></span>
+              <span class="demos__filter-label">All</span>
+              <span class="demos__filter-count">{{ len .Params.cards }}</span>
+            </label>
+            {{ range .Params.filters }}
+            <label class="demos__filter-item">
+              <input type="radio" name="category" value="{{ .id }}">
+              <span class="demos__filter-radio"></span>
+              <span class="demos__filter-label">{{ .label }}</span>
+            </label>
+            {{ end }}
           </div>
         </div>
-      {{ end }}
+        {{ end }}
+
+        <div class="demos__filter-section">
+          <h3 class="demos__filter-title">Features</h3>
+          <div class="demos__filter-list">
+            <label class="demos__filter-item demos__filter-item--checkbox">
+              <input type="checkbox" value="nlp">
+              <span class="demos__filter-checkbox"></span>
+              <span class="demos__filter-label">NLP</span>
+            </label>
+            <label class="demos__filter-item demos__filter-item--checkbox">
+              <input type="checkbox" value="image">
+              <span class="demos__filter-checkbox"></span>
+              <span class="demos__filter-label">Image Search</span>
+            </label>
+            <label class="demos__filter-item demos__filter-item--checkbox">
+              <input type="checkbox" value="code">
+              <span class="demos__filter-checkbox"></span>
+              <span class="demos__filter-label">Code</span>
+            </label>
+            <label class="demos__filter-item demos__filter-item--checkbox">
+              <input type="checkbox" value="ecommerce">
+              <span class="demos__filter-checkbox"></span>
+              <span class="demos__filter-label">E-Commerce</span>
+            </label>
+          </div>
+        </div>
+      </aside>
+
+      <div class="demos__main">
+        <div class="demos__toolbar">
+          <span class="demos__results-count"><span id="results-count">{{ len .Params.cards }}</span> demos</span>
+          <div class="demos__view-toggle">
+            <button class="demos__view-btn demos__view-btn--active" data-view="grid" aria-label="Grid view">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7" rx="1" />
+                <rect x="14" y="3" width="7" height="7" rx="1" />
+                <rect x="3" y="14" width="7" height="7" rx="1" />
+                <rect x="14" y="14" width="7" height="7" rx="1" />
+              </svg>
+            </button>
+            <button class="demos__view-btn" data-view="list" aria-label="List view">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="demos__grid" id="demos-grid">
+          {{ range .Params.cards }}
+          <a href="{{ .link.url }}" class="demos__card" target="_blank" rel="noopener noreferrer" {{ if .category }}data-category="{{ .category }}"{{ end }}>
+            <div class="demos__card-thumbnail demos__card-thumbnail--{{ .color | default "coral" }}">
+              {{ if .image }}
+              <img src="{{ .image }}" alt="{{ .title }}" class="demos__card-image">
+              {{ else if .icon }}
+              <div class="demos__card-icon">
+                {{ .icon | safeHTML }}
+              </div>
+              {{ else }}
+              <div class="demos__card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0112 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5" />
+                </svg>
+              </div>
+              {{ end }}
+            </div>
+            <div class="demos__card-content">
+              <div class="demos__card-tags">
+                {{ range .tags }}
+                <span class="demos__card-tag demos__card-tag--{{ .type | default "category" }}">{{ .label }}</span>
+                {{ end }}
+              </div>
+              <h3 class="demos__card-title">{{ .title }}</h3>
+              <p class="demos__card-description">{{ .description }}</p>
+              <span class="demos__card-cta">
+                {{ .link.text | default "View demo" }}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                </svg>
+              </span>
+            </div>
+          </a>
+          {{ end }}
+        </div>
+      </div>
     </div>
   </div>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const grid = document.getElementById('demos-grid');
+  const viewBtns = document.querySelectorAll('.demos__view-btn');
+  const searchInput = document.getElementById('demo-search');
+  const cards = document.querySelectorAll('.demos__card');
+  const resultsCount = document.getElementById('results-count');
+
+  // View toggle
+  viewBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      viewBtns.forEach(b => b.classList.remove('demos__view-btn--active'));
+      this.classList.add('demos__view-btn--active');
+
+      if (this.dataset.view === 'list') {
+        grid.classList.add('demos__grid--list');
+      } else {
+        grid.classList.remove('demos__grid--list');
+      }
+    });
+  });
+
+  // Category filter
+  const categoryInputs = document.querySelectorAll('input[name="category"]');
+  categoryInputs.forEach(input => {
+    input.addEventListener('change', filterCards);
+  });
+
+  // Search
+  if (searchInput) {
+    searchInput.addEventListener('input', filterCards);
+  }
+
+  function filterCards() {
+    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+    const selectedCategory = document.querySelector('input[name="category"]:checked')?.value || 'all';
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+      const title = card.querySelector('.demos__card-title')?.textContent.toLowerCase() || '';
+      const description = card.querySelector('.demos__card-description')?.textContent.toLowerCase() || '';
+      const category = card.dataset.category || '';
+
+      const matchesSearch = !searchTerm || title.includes(searchTerm) || description.includes(searchTerm);
+      const matchesCategory = selectedCategory === 'all' || category === selectedCategory;
+
+      if (matchesSearch && matchesCategory) {
+        card.style.display = '';
+        visibleCount++;
+      } else {
+        card.style.display = 'none';
+      }
+    });
+
+    if (resultsCount) {
+      resultsCount.textContent = visibleCount;
+    }
+  }
+});
+</script>

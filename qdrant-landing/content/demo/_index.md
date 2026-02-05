@@ -1,41 +1,67 @@
 ---
-title: Qdrant Demos and Tutorials
-description: Experience firsthand how Qdrant powers intelligent search, anomaly detection, and personalized recommendations, showcasing the full capabilities of vector search to revolutionize data exploration and insights.
+title: Demos & Tutorials
+description: Explore interactive demos showcasing vector search, semantic retrieval, recommendations, and more. See Qdrant in action across different use cases.
+filters:
+  - id: search
+    label: Semantic Search
+  - id: recommendations
+    label: Recommendations
+  - id: classification
+    label: Classification
 cards:
   - id: 0
-    title: Semantic Search Demo - Startup Search
-    paragraphs:
-      - id: 0
-        content: This demo leverages a pre-trained SentenceTransformer model to perform semantic searches on startup descriptions, transforming them into vectors for the Qdrant engine.
-      - id: 1
-        content: Enter a query to see how neural search compares to traditional full-text search, with the option to toggle neural search on and off for direct comparison.
+    title: Startup Search
+    description: Search through startup descriptions using neural semantic search. Compare results with traditional full-text search to see the power of vector embeddings.
+    color: coral
+    category: search
+    tags:
+      - label: Semantic Search
+        type: category
+      - label: NLP
+        type: feature
+    image: /demo/startup_search_demo.jpg
     link:
-      text: View Demo
+      text: Try demo
       url: https://qdrant.to/semantic-search-demo
   - id: 1
-    title: Semantic Search and Recommendations Demo - Food Discovery
-    paragraphs:
-      - id: 0
-        content: Explore personalized meal recommendations with our demo, using Delivery Service data. Like or dislike dish photos to refine suggestions based on visual appeal.
-      - id: 1
-        content: Filter options allow for restaurant selections within your delivery area, tailoring your dining experience to your preferences.
+    title: Food Discovery
+    description: Get personalized meal recommendations based on visual preferences. Like or dislike dish photos and watch the system learn your taste in real-time.
+    color: teal
+    category: recommendations
+    tags:
+      - label: Recommendations
+        type: category
+      - label: Image Search
+        type: feature
+    image: /demo/food-discovery-demo.png
     link:
-      text: View Demo
+      text: Try demo
       url: https://food-discovery.qdrant.tech/
   - id: 2
-    title: Categorization Demo -<br> E-Commerce Products
-    paragraphs:
-      - id: 0
-        content: Discover the power of vector databases in e-commerce through our demo. Simply input a product name and watch as our multi-language model intelligently categorizes it. The dots you see represent product clusters, highlighting our system's efficient categorization.
+    title: E-Commerce Categorization
+    description: See how vector databases handle product categorization at scale. Input any product name and watch it get intelligently classified using multi-language embeddings.
+    color: violet
+    category: classification
+    tags:
+      - label: Classification
+        type: category
+      - label: E-Commerce
+        type: feature
+    image: /demo/products_categorization_demo.jpg
     link:
-      text: View Demo
+      text: Try demo
       url: https://qdrant.to/extreme-classification-demo
   - id: 3
-    title: Code Search Demo -<br> Explore Qdrant's Codebase
-    paragraphs:
-      - id: 0
-        content: Semantic search isn't just for natural language. By combining results from two models, qdrant is able to locate relevant code snippets down to the exact line.
+    title: Code Search
+    description: Find relevant code snippets across Qdrant's codebase using semantic understanding. Combines results from multiple models to locate code down to the exact line.
+    color: blue
+    category: search
+    tags:
+      - label: Semantic Search
+        type: category
+      - label: Code
+        type: feature
     link:
-      text: View Demo
+      text: Try demo
       url: https://code-search.qdrant.tech/
 ---
